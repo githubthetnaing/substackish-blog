@@ -19,10 +19,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   if(req.method === 'POST'){
-    // create post - simple admin check via env ALLOWED_ADMINS (comma-separated emails)
     const allowed = process.env.ALLOWED_ADMINS || ''
     const { author_email, title, subtitle, content, status, slug, cover_url, tags } = req.body
-    if(!allowed.split(',').map(s=>s.trim()).includes(author_email)){
+    const isAllowed = !allowed || allowed.split(',').map(s=>s.trim()).includes(author_email)
+    if(!isAllowed){
       return res.status(403).json({ error: 'not_allowed' })
     }
 
@@ -47,7 +47,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if(req.method === 'PUT'){
     const { id, author_email, ...updates } = req.body
     const allowed = process.env.ALLOWED_ADMINS || ''
-    if(!allowed.split(',').map(s=>s.trim()).includes(author_email)){
+    const isAllowed = !allowed || allowed.split(',').map(s=>s.trim()).includes(author_email)
+    if(!isAllowed){
       return res.status(403).json({ error: 'not_allowed' })
     }
     if(updates.status==='published') updates.published_at = new Date().toISOString()
@@ -59,7 +60,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if(req.method === 'DELETE'){
     const { id, author_email } = req.body
     const allowed = process.env.ALLOWED_ADMINS || ''
-    if(!allowed.split(',').map(s=>s.trim()).includes(author_email)){
+    const isAllowed = !allowed || allowed.split(',').map(s=>s.trim()).includes(author_email)
+    if(!isAllowed){
       return res.status(403).json({ error: 'not_allowed' })
     }
     const { error } = await supabase.from('posts').delete().eq('id', id)
