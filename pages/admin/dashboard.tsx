@@ -6,7 +6,12 @@ export default function Dashboard(){
   const router = require('next/router').useRouter()
   React.useEffect(()=>{
     (async ()=>{
-      const { data } = await (await import('../../lib/supabaseClient')).supabase.auth.getUser()
+      const client = (await import('../../lib/supabaseClient')).supabase
+      if (!client) {
+        router.push('/admin/login')
+        return
+      }
+      const { data } = await client.auth.getUser()
       if(!data.user) router.push('/admin/login')
     })()
   },[])

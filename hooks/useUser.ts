@@ -4,12 +4,17 @@ import { supabase } from '../lib/supabaseClient'
 export function useUser(){
   const [user, setUser] = useState<any>(null)
   useEffect(()=>{
+    if (!supabase) {
+      setUser(null)
+      return
+    }
+
     let mounted = true
     supabase.auth.getUser().then(res=>{
       if(mounted) setUser(res.data.user)
     })
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session)=>{
-      setUser(session?.user ?? null)
+      if (mounted) setUser(session?.user ?? null)
     })
     return ()=>{ mounted=false; sub.subscription.unsubscribe() }
   },[])

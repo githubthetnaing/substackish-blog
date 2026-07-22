@@ -2,6 +2,10 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { supabase } from '../../lib/supabaseClient'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse){
+  if (!supabase) {
+    return res.status(500).json({ error: 'Supabase is not configured' })
+  }
+
   if(req.method === 'POST'){
     const { post_id } = req.body
     const { data, error } = await supabase.from('likes').insert([{ post_id }]).select().maybeSingle()

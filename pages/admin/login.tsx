@@ -8,6 +8,10 @@ export default function Login(){
 
   const handleSubmit = async (e: any) =>{
     e.preventDefault()
+    if (!supabase) {
+      alert('Supabase is not configured yet')
+      return
+    }
     const { error } = await supabase.auth.signInWithOtp({ email })
     if(!error) setSent(true)
   }

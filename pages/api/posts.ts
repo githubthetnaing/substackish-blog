@@ -2,6 +2,10 @@ import { NextApiRequest, NextApiResponse } from 'next'
 import { supabase } from '../../lib/supabaseClient'
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse){
+  if (!supabase) {
+    return res.status(500).json({ error: 'Supabase is not configured' })
+  }
+
   if(req.method === 'GET'){
     const { slug } = req.query
     if(slug){
@@ -30,10 +34,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       author_id = newUser?.id
     }
 
-    const insert = {
+    const insert: Record<string, any> = {
       title, subtitle, content, status: status||'draft', author_id, slug, cover_url, tags
     }
-    if(status==='published') insert['published_at'] = new Date().toISOString()
+    if(status==='published') insert.published_at = new Date().toISOString()
 
     const { data, error } = await supabase.from('posts').insert([insert]).select().maybeSingle()
     if(error) return res.status(500).json({error: error.message})

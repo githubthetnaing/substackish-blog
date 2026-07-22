@@ -8,7 +8,12 @@ export default function Editor(){
   const router = require('next/router').useRouter()
   React.useEffect(()=>{
     (async ()=>{
-      const { data } = await (await import('../../lib/supabaseClient')).supabase.auth.getUser()
+      const client = (await import('../../lib/supabaseClient')).supabase
+      if (!client) {
+        router.push('/admin/login')
+        return
+      }
+      const { data } = await client.auth.getUser()
       if(!data.user) router.push('/admin/login')
     })()
   },[])
@@ -23,6 +28,10 @@ export default function Editor(){
   const [publishing, setPublishing] = useState(false)
   const save = async (publish=false) =>{
     const post = { title, subtitle, blocks }
+    if (!supabase) {
+      alert('Supabase is not configured yet')
+      return
+    }
     const user = (await supabase.auth.getUser()).data.user
     const author_email = user?.email || ''
     const payload = { author_email, title, subtitle, content: post, status: publish? 'published' : 'draft', slug: title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,''), tags: [] }
