@@ -35,25 +35,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const insert: Record<string, any> = {
-      title, subtitle, content, status: status||'draft', author_id, slug, cover_url, tags
+      title,
+      subtitle,
+      content,
+      status: status || 'draft',
+      author_id,
+      slug,
+      cover_url,
+      tags,
+      updated_at: new Date().toISOString(),
     }
-    if(status==='published') insert.published_at = new Date().toISOString()
+    if (status === 'published') insert.published_at = new Date().toISOString()
 
     const { data, error } = await supabase.from('posts').insert([insert]).select().maybeSingle()
-    if(error) return res.status(500).json({error: error.message})
+    if (error) return res.status(500).json({ error: error.message })
     return res.status(200).json(data)
   }
 
-  if(req.method === 'PUT'){
+  if (req.method === 'PUT') {
     const { id, author_email, ...updates } = req.body
     const allowed = process.env.ALLOWED_ADMINS || ''
-    const isAllowed = !allowed || allowed.split(',').map(s=>s.trim()).includes(author_email)
-    if(!isAllowed){
+    const isAllowed = !allowed || allowed.split(',').map((s) => s.trim()).includes(author_email)
+    if (!isAllowed) {
       return res.status(403).json({ error: 'not_allowed' })
     }
-    if(updates.status==='published') updates.published_at = new Date().toISOString()
+    updates.updated_at = new Date().toISOString()
+    if (updates.status === 'published') updates.published_at = new Date().toISOString()
     const { data, error } = await supabase.from('posts').update(updates).eq('id', id).select().maybeSingle()
-    if(error) return res.status(500).json({error: error.message})
+    if (error) return res.status(500).json({ error: error.message })
     return res.status(200).json(data)
   }
 
