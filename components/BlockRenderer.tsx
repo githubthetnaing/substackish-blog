@@ -5,6 +5,9 @@ export default function BlockRenderer({blocks}:{blocks:any[]}){
   return (
     <div>
       {blocks.map((b,i)=>{
+        if (b.type === 'richtext') {
+          return <div key={i} dangerouslySetInnerHTML={{ __html: b.data?.html || '' }} />
+        }
         switch(b.type){
           case 'paragraph': return <p key={i}>{b.data.text}</p>
           case 'callout': return <div key={i} className="p-4 bg-yellow-50 border-l-4 border-yellow-300">{b.data.icon && <div className="text-2xl">{b.data.icon}</div>}<div>{b.data.text}</div></div>
